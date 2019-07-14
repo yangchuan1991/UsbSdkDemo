@@ -1,0 +1,38 @@
+<configuration>
+
+
+    <!--<appender name="logcat" class="ch.qos.logback.classic.android.LogcatAppender">-->
+        <!--<tagEncoder>-->
+            <!--<pattern>%logger{12}</pattern>-->
+        <!--</tagEncoder>-->
+        <!--<encoder>-->
+            <!--<pattern>[%-20thread] %msg</pattern>-->
+        <!--</encoder>-->
+    <!--</appender>-->
+
+
+    <appender name="LOGCAT" class="ch.qos.logback.classic.android.LogcatAppender">
+        <encoder>
+            <pattern>[%file:%line] - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+
+
+<!--
+    <root level="DEBUG">
+        <appender-ref ref="logcat" />
+    </root>
+    -->
+    <logger name="proto.time" level="ERROR">
+        <!--<appender-ref ref="EMAIL"/>-->
+        <appender-ref ref="FILE_TIME"/>
+    </logger>
+
+    <root level="ALL">
+        <appender-ref ref="LOGCAT"/>
+        <appender-ref ref="FILE"/>
+        <appender-ref ref="FILE_TIME"/>
+    </root>
+
+</configuration>
