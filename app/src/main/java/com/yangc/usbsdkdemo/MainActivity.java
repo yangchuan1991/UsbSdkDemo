@@ -19,7 +19,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private TextView error, log;
     private EditText message;
-    private Button sendMessage;
+    private Button sendMessage,receivemessage;
     private RadioButton host, accessory;
     private boolean isReceiverMessage = true;
     private UsbCommunication usbCommunication;
@@ -34,18 +34,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void getUsbMessage() {
         //接收数据
-        usbCommunication.receiveMessage(new ReciverMessageListener() {
-            @Override
-            public void onSuccess(byte[] bytes) {
-                usbMessage = new String(bytes);
-                log.setText(usbMessage);
-            }
+            usbCommunication.receiveMessage(new ReciverMessageListener() {
+//            @Override
+//            public void onSuccess(byte[] bytes) {
+//                usbMessage = new String(bytes);
+//                log.setText(usbMessage);
+//            }
 
-            @Override
-            public void onFaild(String msg) {
-                Toast.makeText(MainActivity.this, msg, Toast.LENGTH_LONG).show();
-            }
-        });
+                @Override
+                public void onSuccess(String bytes) {
+                    log.setText(bytes);
+                }
+
+                @Override
+                public void onFaild(String msg) {
+                    Toast.makeText(MainActivity.this, msg, Toast.LENGTH_LONG).show();
+                }
+            });
     }
 
     /**
@@ -57,7 +62,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         message = findViewById(R.id.message);
         sendMessage = findViewById(R.id.sendmessage);
         sendMessage.setEnabled(false);
+        receivemessage = findViewById(R.id.receivemessage);
+        receivemessage.setEnabled(false);
         sendMessage.setOnClickListener(this);
+        receivemessage.setOnClickListener(this);
     }
 
     private String usbMessage;
@@ -70,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onSuccess(int code, String msg) {
                 sendMessage.setEnabled(true);
-                getUsbMessage();
+                receivemessage.setEnabled(true);
             }
 
             @Override
@@ -105,6 +113,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                     }
                 });
+                break;
+            case R.id.receivemessage:
+                getUsbMessage();
                 break;
         }
     }
