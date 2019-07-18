@@ -10,11 +10,15 @@ import android.widget.Toast;
 import com.wiseasy.communication.constant.CommunicationCode;
 import com.wiseasy.communication.listener.CommunicationListener;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 /**
  * 用来监听系统下发的usb设备连接成功的广播
  */
 public class OpenDevicesReceiver extends BroadcastReceiver {
+    private Logger logger = LoggerFactory.getLogger("OpenDevicesReceiver------------------>");
 
     private OpenDevicesListener mOpenDevicesListener;//usb设备连接的回调接口
 
@@ -31,11 +35,12 @@ public class OpenDevicesReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         UsbDevice usbDevice = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);//获取附件设备
+        logger.debug("结果 onReceive(Context context, Intent intent)--getProductId---------------------={}", usbDevice.getProductId());
+
         if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {//判断设备是都有usb
             if (usbDevice != null) {
                 mOpenDevicesListener.openAccessoryModel(usbDevice);
-                listener.onSuccess(CommunicationCode.USB_OPEN_SUCCESS,"USB权限开启成功");
-                Toast.makeText(context, "USB权限开启成功", Toast.LENGTH_SHORT).show();
+                listener.onSuccess();
             } else {
                 mOpenDevicesListener.openDevicesError();
                 listener.onFaild("USB设备连接异常");

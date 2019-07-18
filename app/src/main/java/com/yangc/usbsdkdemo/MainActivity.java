@@ -10,16 +10,16 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.wiseasy.communication.constant.CommunicationCode;
 import com.wiseasy.communication.listener.CommunicationListener;
 import com.wiseasy.communication.listener.ReciverMessageListener;
-import com.wiseasy.communication.listener.SendMessageListener;
 import com.wiseasy.communication.usb.UsbCommunication;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private TextView error, log;
     private EditText message;
-    private Button sendMessage,receivemessage;
+    private Button open, sendMessage, receivemessage;
     private RadioButton host, accessory;
     private boolean isReceiverMessage = true;
     private UsbCommunication usbCommunication;
@@ -34,23 +34,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void getUsbMessage() {
         //接收数据
-            usbCommunication.receiveMessage(new ReciverMessageListener() {
+        usbCommunication.receiveMessage(new ReciverMessageListener() {
 //            @Override
 //            public void onSuccess(byte[] bytes) {
 //                usbMessage = new String(bytes);
 //                log.setText(usbMessage);
 //            }
 
-                @Override
-                public void onSuccess(String bytes) {
-                    log.setText(bytes);
-                }
+            @Override
+            public void onSuccess(String bytes) {
+                log.setText(bytes);
+            }
 
-                @Override
-                public void onFaild(String msg) {
-                    Toast.makeText(MainActivity.this, msg, Toast.LENGTH_LONG).show();
-                }
-            });
+            @Override
+            public void onFaild(String msg) {
+                Toast.makeText(MainActivity.this, msg, Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     /**
@@ -64,34 +64,36 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         sendMessage.setEnabled(false);
         receivemessage = findViewById(R.id.receivemessage);
         receivemessage.setEnabled(false);
+        open = findViewById(R.id.open);
+        open.setOnClickListener(this);
         sendMessage.setOnClickListener(this);
         receivemessage.setOnClickListener(this);
     }
 
-    private String usbMessage;
 
     private void initUsb() {
         //初始化usbCommunication对象
-        usbCommunication =  UsbCommunication.getInstance(this);
-        //开启usb连接
-       usbCommunication.openCommunication(new CommunicationListener() {
-            @Override
-            public void onSuccess(int code, String msg) {
-                sendMessage.setEnabled(true);
-                receivemessage.setEnabled(true);
-            }
-
-            @Override
-            public void onFaild(String msg) {
-                Toast.makeText(MainActivity.this, msg, Toast.LENGTH_LONG).show();
-            }
-        });
-
+        usbCommunication = UsbCommunication.getInstance(this);
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
+            case R.id.open:
+                //开启usb连接
+                usbCommunication.openCommunication(new CommunicationListener() {
+                    @Override
+                    public void onSuccess() {
+                        sendMessage.setEnabled(true);
+                        receivemessage.setEnabled(true);
+                    }
+
+                    @Override
+                    public void onFaild(String msg) {
+                        Toast.makeText(MainActivity.this, msg, Toast.LENGTH_LONG).show();
+                    }
+                });
+                break;
             /**
              * 发送消息
              */
@@ -101,7 +103,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Toast.makeText(MainActivity.this, "请输入要发送的信息", Toast.LENGTH_LONG).show();
                     return;
                 }
-                usbCommunication.sendMessage(msg.getBytes(), new SendMessageListener() {
+                if (usbCommunication.sendMessage(msg.getBytes()) == CommunicationCode.USB_SEND_SUCCESS) {
+                    Toast.makeText(MainActivity.this, "信息发送成功", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(MainActivity.this, "信息发送失败", Toast.LENGTH_SHORT).show();
+                }/*, new SendMessageListener() {
                     @Override
                     public void onSuccess() {
                         Toast.makeText(MainActivity.this, "信息发送成功", Toast.LENGTH_SHORT).show();
@@ -112,7 +118,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
 
                     }
-                });
+                });*/
                 break;
             case R.id.receivemessage:
                 getUsbMessage();

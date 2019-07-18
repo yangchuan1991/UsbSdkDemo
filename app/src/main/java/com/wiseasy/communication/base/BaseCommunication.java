@@ -21,7 +21,9 @@ public interface BaseCommunication {
     /**
      * 发送byte[]类型数据
      */
-    public void sendMessage(byte[] bytes, SendMessageListener listener);
+//    public void sendMessage(byte[] bytes, SendMessageListener listener);
+    public int sendMessage(byte[] bytes/*, SendMessageListener listener*/);
+
 
     /**
      * 接收byte[]类型数据

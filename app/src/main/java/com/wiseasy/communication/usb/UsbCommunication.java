@@ -14,7 +14,6 @@ import android.hardware.usb.UsbManager;
 import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.wiseasy.communication.base.BaseCommunication;
@@ -51,16 +50,16 @@ public class UsbCommunication implements BaseCommunication, UsbDetachedReceiver.
      * Handler相关判断的变量，对应：usb连接初始化成功、失败，usb连接接收消息成功、失败，usb连接发送消息成功、失败
      */
     private static final int RECEIVER_MESSAGE_SUCCESS = 1;
-    private static final int SEND_MESSAGE_SUCCESS = 2;
+    //    private static final int SEND_MESSAGE_SUCCESS = 2;
     private static final int RECEIVER_MESSAGE_FAILED = 3;
-    private static final int SEND_MESSAGE_FAILED = 4;
+    //    private static final int SEND_MESSAGE_FAILED = 4;
     private static final int INIT_FAILED = 5;
     private static final int INIT_SUCCESS = 6;
 
     //接收消息监听回调
     private ReciverMessageListener reciverMessageListener;
     //接收消息监听回调
-    private SendMessageListener sendMessageListener;
+//    private SendMessageListener sendMessageListener;
 
 
     /**
@@ -78,14 +77,17 @@ public class UsbCommunication implements BaseCommunication, UsbDetachedReceiver.
                 case RECEIVER_MESSAGE_FAILED://接收消息失败
                     reciverMessageListener.onFaild("接受消息失败");
                     break;
-                case SEND_MESSAGE_SUCCESS://发送数据成功
-                    sendMessageListener.onSuccess();
-                    break;
-                case SEND_MESSAGE_FAILED://发送数据失败
-                    sendMessageListener.onFaild("发送消息失败,请检查USB连接");
-                    break;
+//                case RECEIVER_MESSAGE_NULL:
+//                    reciverMessageListener.onFaild("接收消息为null");
+//                    break;
+//                case SEND_MESSAGE_SUCCESS://发送数据成功
+//                    sendMessageListener.onSuccess();
+//                    break;
+//                case SEND_MESSAGE_FAILED://发送数据失败
+//                    sendMessageListener.onFaild("发送消息失败,请检查USB连接");
+//                    break;
                 case INIT_SUCCESS://usb主附设备连接陈工
-                    communicationListener.onSuccess(CommunicationCode.USB_OPEN_SUCCESS, "初始化成功");
+                    communicationListener.onSuccess();
                     break;
                 case INIT_FAILED://usb主附设备连接失败
                     communicationListener.onFaild("初始化失败");
@@ -162,6 +164,8 @@ public class UsbCommunication implements BaseCommunication, UsbDetachedReceiver.
          * 遍历集合通过productId过滤不符合条件的设备
          */
         HashMap<String, UsbDevice> deviceList = mUsbManager.getDeviceList();
+        logger.debug("结果 openCommunication(CommunicationListener communicationListener) deviceList---------------------={}", deviceList);
+
 //        if (deviceList != null) {
         if (deviceList.size() > 0) {
             for (UsbDevice usbDevice : deviceList.values()) {
@@ -307,7 +311,7 @@ public class UsbCommunication implements BaseCommunication, UsbDetachedReceiver.
         }
         mUsbEndpointIn = null;
         mUsbEndpointOut = null;
-        isReceiverMessage = false;
+//        isReceiverMessage = false;
         mToggle = false;
         mContext.unregisterReceiver(mUsbDetachedReceiver);
         mContext.unregisterReceiver(mOpenDevicesReceiver);
@@ -324,38 +328,43 @@ public class UsbCommunication implements BaseCommunication, UsbDetachedReceiver.
     private StringBuffer mStringBuffer = new StringBuffer(); //用来拼接发送的数据
 
     @Override
-    public void sendMessage(final byte[] bytes, SendMessageListener listener) {
-        this.sendMessageListener = listener;
+    public int sendMessage(final byte[] bytes) {
+//        public void sendMessage(final byte[] bytes/*, SendMessageListener listener*/) {
+//        this.sendMessageListener = listener;
         if (bytes != null) {
             /**
              * 耗时操作在子线程中执行
              */
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    /**
-                     * 发送数据的地方 , 只接受byte数据类型的数据
-                     */
-                    if (mUsbDeviceConnection == null) {
-                        mHandler.sendEmptyMessage(SEND_MESSAGE_FAILED);
-                        return;
-                    }
-                    int i = mUsbDeviceConnection.bulkTransfer(mUsbEndpointOut, bytes, bytes.length, 3000);
-                    if (i > 0) {//大于0表示发送成功
-                        mHandler.sendEmptyMessage(SEND_MESSAGE_SUCCESS);
-                    } else {
-                        mHandler.sendEmptyMessage(SEND_MESSAGE_FAILED);
-                    }
-                }
-            }).start();
+//            new Thread(new Runnable() {
+//                @Override
+//                public void run() {
+            /**
+             * 发送数据的地方 , 只接受byte数据类型的数据
+             */
+            if (mUsbDeviceConnection == null) {
+//                        mHandler.sendEmptyMessage(SEND_MESSAGE_FAILED);
+                return CommunicationCode.USB_SEND_ERROR;
+            }
+            int i = mUsbDeviceConnection.bulkTransfer(mUsbEndpointOut, bytes, bytes.length, 3000);
+            if (i > 0) {//大于0表示发送成功
+//                        mHandler.sendEmptyMessage(SEND_MESSAGE_SUCCESS);
+//                        sendMessageListener.onSuccess();
+                return CommunicationCode.USB_SEND_SUCCESS;
+            } else {
+//                        mHandler.sendEmptyMessage(SEND_MESSAGE_FAILED);
+//                        sendMessageListener.onFaild("发送消息失败,请检查USB连接");
+                return CommunicationCode.USB_SEND_ERROR;
+            }
+//                }
+//            }).start();
         } else {
-            listener.onFaild("发送数据为null");
-
+//            listener.onFaild("发送数据为null");
+            return CommunicationCode.USB_SEND_ERROR;
         }
     }
 
     //接收数据循环变量,usb连接成功后需要一直监听用户发送的数据
-    private boolean isReceiverMessage = true;
+//    private boolean isReceiverMessage = true;
     //暂定的接收数据的大小，需要优化
     private byte[] mBytes = new byte[1024];
 
@@ -370,30 +379,33 @@ public class UsbCommunication implements BaseCommunication, UsbDetachedReceiver.
     @Override
     public void receiveMessage(final ReciverMessageListener listener) {
         this.reciverMessageListener = listener;
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                SystemClock.sleep(1000);
-                while (isReceiverMessage) {
-                    /**
-                     * 循环接受数据的地方 , 只接受byte数据类型的数据
-                     */
-                    if (mUsbDeviceConnection != null && mUsbEndpointIn != null) {
-                        int i = mUsbDeviceConnection.bulkTransfer(mUsbEndpointIn, mBytes, mBytes.length, 3000);
-                        if (i > 0) {
-                            mStringBuffer.append(new String(mBytes, 0, i) + "\n");
-                            Message message = Message.obtain();
-                            message.what = RECEIVER_MESSAGE_SUCCESS;
-//                            message.obj = mBytes;
-                            message.obj = mStringBuffer;
-                            mHandler.sendMessage(message);
-                        }
-                    } else {
-                        mHandler.sendEmptyMessage(RECEIVER_MESSAGE_FAILED);
-                    }
-                }
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                SystemClock.sleep(1000);
+//                while (isReceiverMessage) {
+        /**
+         * 循环接受数据的地方 , 只接受byte数据类型的数据
+         */
+        if (mUsbDeviceConnection != null && mUsbEndpointIn != null) {
+            mUsbEndpointIn.getEndpointNumber();
+            int i = mUsbDeviceConnection.bulkTransfer(mUsbEndpointIn, mBytes, mBytes.length, 3000);
+            if (i > 0) {
+                mStringBuffer.append(new String(mBytes, 0, i) + "\n");
+//                            Message message = Message.obtain();
+//                            message.what = RECEIVER_MESSAGE_SUCCESS;
+////                            message.obj = mBytes;
+//                            message.obj = mStringBuffer;
+//                            mHandler.sendMessage(message);
+                reciverMessageListener.onSuccess(mStringBuffer.toString());
             }
-        }).start();
+        } else {
+//                        mHandler.sendEmptyMessage(RECEIVER_MESSAGE_FAILED);
+            reciverMessageListener.onFaild("接受消息失败");
+        }
+//                }
+//            }
+//        }).start();
     }
 
     /**
@@ -411,7 +423,8 @@ public class UsbCommunication implements BaseCommunication, UsbDetachedReceiver.
      */
     @Override
     public void openDevicesError() {
-        Toast.makeText(mContext, "USB权限被拒绝", Toast.LENGTH_SHORT).show();
+//        Toast.makeText(mContext, "USB权限被拒绝", Toast.LENGTH_SHORT).show();
+        closeCommunication();
     }
 
     /**
@@ -427,7 +440,7 @@ public class UsbCommunication implements BaseCommunication, UsbDetachedReceiver.
         mUsbEndpointIn = null;
         mUsbEndpointOut = null;
 //        mToggle = false;
-        isReceiverMessage = false;
+//        isReceiverMessage = false;
         mContext.unregisterReceiver(mUsbDetachedReceiver);
         mContext.unregisterReceiver(mOpenDevicesReceiver);
     }
