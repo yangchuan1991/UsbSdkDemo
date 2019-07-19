@@ -5,7 +5,7 @@ package com.wiseasy.communication.listener;
  */
 public interface ReciverMessageListener {
 //    void onSuccess(byte[] bytes);
-    void onSuccess(String  bytes);
+    void onSuccess(String bytes);
 
     void onFaild(String msg);
 }

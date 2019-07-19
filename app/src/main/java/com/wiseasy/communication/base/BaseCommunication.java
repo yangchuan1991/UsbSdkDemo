@@ -9,7 +9,7 @@ public interface BaseCommunication {
 
     /**
      * 开启通讯接口
-     * @return 200 表示成功开启
+     * @return 0 表示成功开启
      */
     public void openCommunication(CommunicationListener listener);
 

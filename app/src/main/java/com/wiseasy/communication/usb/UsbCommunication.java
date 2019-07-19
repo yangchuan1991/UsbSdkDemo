@@ -41,7 +41,8 @@ public class UsbCommunication implements BaseCommunication, UsbDetachedReceiver.
     //usb设备管理器
     private UsbManager mUsbManager;
     //自定义usb权限action
-    private static final String USB_ACTION = "com.tcl.navigator.hostchart";
+//    private static final String USB_ACTION = "com.tcl.navigator.hostchart";
+    private static final String USB_ACTION = "com.yangc.host";
 
     private Logger logger = LoggerFactory.getLogger("UsbCommunication------------------>");
 
@@ -49,12 +50,12 @@ public class UsbCommunication implements BaseCommunication, UsbDetachedReceiver.
     /**
      * Handler相关判断的变量，对应：usb连接初始化成功、失败，usb连接接收消息成功、失败，usb连接发送消息成功、失败
      */
-    private static final int RECEIVER_MESSAGE_SUCCESS = 1;
+//    private static final int RECEIVER_MESSAGE_SUCCESS = 1;
     //    private static final int SEND_MESSAGE_SUCCESS = 2;
-    private static final int RECEIVER_MESSAGE_FAILED = 3;
+//    private static final int RECEIVER_MESSAGE_FAILED = 3;
     //    private static final int SEND_MESSAGE_FAILED = 4;
-    private static final int INIT_FAILED = 5;
-    private static final int INIT_SUCCESS = 6;
+//    private static final int INIT_FAILED = 5;
+//    private static final int INIT_SUCCESS = 6;
 
     //接收消息监听回调
     private ReciverMessageListener reciverMessageListener;
@@ -65,18 +66,18 @@ public class UsbCommunication implements BaseCommunication, UsbDetachedReceiver.
     /**
      * 使用handler将所有的操作统一到主线程
      */
-    @SuppressLint("HandlerLeak")
-    private Handler mHandler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case RECEIVER_MESSAGE_SUCCESS://成功接受到数据
-//                    reciverMessageListener.onSuccess((byte[]) msg.obj);
-                    reciverMessageListener.onSuccess(mStringBuffer.toString());
-                    break;
-                case RECEIVER_MESSAGE_FAILED://接收消息失败
-                    reciverMessageListener.onFaild("接受消息失败");
-                    break;
+//    @SuppressLint("HandlerLeak")
+//    private Handler mHandler = new Handler() {
+//        @Override
+//        public void handleMessage(Message msg) {
+//            switch (msg.what) {
+//                case RECEIVER_MESSAGE_SUCCESS://成功接受到数据
+////                    reciverMessageListener.onSuccess((byte[]) msg.obj);
+//                    reciverMessageListener.onSuccess(mStringBuffer.toString());
+//                    break;
+//                case RECEIVER_MESSAGE_FAILED://接收消息失败
+//                    reciverMessageListener.onFaild("接受消息失败");
+//                    break;
 //                case RECEIVER_MESSAGE_NULL:
 //                    reciverMessageListener.onFaild("接收消息为null");
 //                    break;
@@ -86,15 +87,15 @@ public class UsbCommunication implements BaseCommunication, UsbDetachedReceiver.
 //                case SEND_MESSAGE_FAILED://发送数据失败
 //                    sendMessageListener.onFaild("发送消息失败,请检查USB连接");
 //                    break;
-                case INIT_SUCCESS://usb主附设备连接陈工
-                    communicationListener.onSuccess();
-                    break;
-                case INIT_FAILED://usb主附设备连接失败
-                    communicationListener.onFaild("初始化失败");
-                    break;
-            }
-        }
-    };
+//                case INIT_SUCCESS://usb主附设备连接陈工
+//                    communicationListener.onSuccess();
+//                    break;
+//                case INIT_FAILED://usb主附设备连接失败
+//                    communicationListener.onFaild("初始化失败");
+//                    break;
+//            }
+//        }
+//    };
 
     /**
      * 单例模式 初始化
@@ -202,20 +203,29 @@ public class UsbCommunication implements BaseCommunication, UsbDetachedReceiver.
      */
     private void initAccessory(UsbDevice usbDevice) {
         //获取usb连接通道
-        UsbDeviceConnection usbDeviceConnection = mUsbManager.openDevice(usbDevice);
-        if (usbDeviceConnection == null) {
-            communicationListener.onFaild("请连接USB");
-            return;
-        }
+//        UsbDeviceConnection usbDeviceConnection = mUsbManager.openDevice(usbDevice);
+        mUsbDeviceConnection = mUsbManager.openDevice(usbDevice);
+//        if (usbDeviceConnection == null) {
+//            communicationListener.onFaild("请连接USB");
+//            return;
+//        }
         //根据AOA协议打开Accessory模式
-        initStringControlTransfer(usbDeviceConnection, 0, "Google, Inc."); // MANUFACTURER
-        initStringControlTransfer(usbDeviceConnection, 1, "AccessoryChat"); // MODEL
-        initStringControlTransfer(usbDeviceConnection, 2, "Accessory Chat"); // DESCRIPTION
-        initStringControlTransfer(usbDeviceConnection, 3, "1.0"); // VERSION
-        initStringControlTransfer(usbDeviceConnection, 4, "http://www.android.com"); // URI
-        initStringControlTransfer(usbDeviceConnection, 5, "0123456789"); // SERIAL
-        usbDeviceConnection.controlTransfer(0x40, 53, 0, 0, new byte[]{}, 0, 100);
-        usbDeviceConnection.close();
+//        initStringControlTransfer(usbDeviceConnection, 0, "Google, Inc."); // MANUFACTURER
+//        initStringControlTransfer(usbDeviceConnection, 1, "AccessoryChat"); // MODEL
+//        initStringControlTransfer(usbDeviceConnection, 2, "Accessory Chat"); // DESCRIPTION
+//        initStringControlTransfer(usbDeviceConnection, 3, "1.0"); // VERSION
+//        initStringControlTransfer(usbDeviceConnection, 4, "http://www.android.com"); // URI
+//        initStringControlTransfer(usbDeviceConnection, 5, "0123456789"); // SERIAL
+//        usbDeviceConnection.controlTransfer(0x40, 53, 0, 0, new byte[]{}, 0, 100);
+//        usbDeviceConnection.close();
+        initStringControlTransfer(mUsbDeviceConnection, 0, "Google, Inc."); // MANUFACTURER
+        initStringControlTransfer(mUsbDeviceConnection, 1, "AccessoryChat"); // MODEL
+        initStringControlTransfer(mUsbDeviceConnection, 2, "Accessory Chat"); // DESCRIPTION
+        initStringControlTransfer(mUsbDeviceConnection, 3, "1.0"); // VERSION
+        initStringControlTransfer(mUsbDeviceConnection, 4, "http://www.android.com"); // URI
+        initStringControlTransfer(mUsbDeviceConnection, 5, "0123456789"); // SERIAL
+        mUsbDeviceConnection.controlTransfer(0x40, 53, 0, 0, new byte[]{}, 0, 100);
+        mUsbDeviceConnection.close();
         logger.debug("结果  initAccessory(UsbDevice usbDevice)---------------------={}", "执行完毕");
         initDevice();//子设备初始化
     }
@@ -238,17 +248,17 @@ public class UsbCommunication implements BaseCommunication, UsbDetachedReceiver.
      * 第一次循环是为了判断用户是否有权限
      * 第二次循环是为了拿到usb输入输出端点
      */
-    private boolean mToggle = true;
+//    private boolean mToggle = true;
 
     private void initDevice() {
         /**
          * 使用usbManager遍历设备集合，通过productId找出匹配accessory模式的设备
          */
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (mToggle) {
-                    SystemClock.sleep(1000);
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                while (mToggle) {
+//                    SystemClock.sleep(1000);
                     HashMap<String, UsbDevice> deviceList = mUsbManager.getDeviceList();
                     Collection<UsbDevice> values = deviceList.values();
                     if (!values.isEmpty()) {
@@ -278,8 +288,9 @@ public class UsbCommunication implements BaseCommunication, UsbDetachedReceiver.
                                         }
                                         //当输出端点和输入端点都不为空时，表示usb连接成功,初始化完成，可以进行数据收发
                                         if (mUsbEndpointOut != null && mUsbEndpointIn != null) {
-                                            mHandler.sendEmptyMessage(INIT_SUCCESS);
-                                            mToggle = false;
+//                                            mHandler.sendEmptyMessage(INIT_SUCCESS);
+                                            communicationListener.onSuccess();
+//                                            mToggle = false;
                                         }
                                     }
                                 } else {
@@ -290,12 +301,13 @@ public class UsbCommunication implements BaseCommunication, UsbDetachedReceiver.
                         }
                     } else {
                         //初始化失败
-                        mHandler.sendEmptyMessage(INIT_FAILED);
-                        mToggle = false;
+//                        mHandler.sendEmptyMessage(INIT_FAILED);
+                        communicationListener.onFaild("usb通讯初始化失败");
+//                        mToggle = false;/
                     }
-                }
-            }
-        }).start();
+//                }
+//            }
+//        }).start();
     }
 
     /**
@@ -312,7 +324,7 @@ public class UsbCommunication implements BaseCommunication, UsbDetachedReceiver.
         mUsbEndpointIn = null;
         mUsbEndpointOut = null;
 //        isReceiverMessage = false;
-        mToggle = false;
+//        mToggle = false;
         mContext.unregisterReceiver(mUsbDetachedReceiver);
         mContext.unregisterReceiver(mOpenDevicesReceiver);
     }
@@ -329,6 +341,8 @@ public class UsbCommunication implements BaseCommunication, UsbDetachedReceiver.
 
     @Override
     public int sendMessage(final byte[] bytes) {
+        logger.debug("结果   sendMessage(final byte[] bytes) mUsbDeviceConnection---------------------={}", mUsbDeviceConnection);
+
 //        public void sendMessage(final byte[] bytes/*, SendMessageListener listener*/) {
 //        this.sendMessageListener = listener;
         if (bytes != null) {
@@ -384,6 +398,8 @@ public class UsbCommunication implements BaseCommunication, UsbDetachedReceiver.
 //            public void run() {
 //                SystemClock.sleep(1000);
 //                while (isReceiverMessage) {
+        logger.debug("结果   receiveMessage(final ReciverMessageListener listener) mUsbDeviceConnection---------------------={}", mUsbDeviceConnection);
+
         /**
          * 循环接受数据的地方 , 只接受byte数据类型的数据
          */
@@ -424,7 +440,7 @@ public class UsbCommunication implements BaseCommunication, UsbDetachedReceiver.
     @Override
     public void openDevicesError() {
 //        Toast.makeText(mContext, "USB权限被拒绝", Toast.LENGTH_SHORT).show();
-        closeCommunication();
+//        closeCommunication();
     }
 
     /**
@@ -432,11 +448,12 @@ public class UsbCommunication implements BaseCommunication, UsbDetachedReceiver.
      */
     @Override
     public void usbDetached() {
-        if (mUsbDeviceConnection != null) {
+        if (mUsbDeviceConnection != null&&mUsbInterface!=null) {
             mUsbDeviceConnection.releaseInterface(mUsbInterface);
             mUsbDeviceConnection.close();
             mUsbDeviceConnection = null;
         }
+        mUsbInterface = null;
         mUsbEndpointIn = null;
         mUsbEndpointOut = null;
 //        mToggle = false;

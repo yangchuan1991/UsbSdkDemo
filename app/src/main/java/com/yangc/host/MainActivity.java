@@ -1,12 +1,11 @@
-package com.yangc.usbsdkdemo;
+package com.yangc.host;
 
-import android.support.v7.app.AppCompatActivity;
+import android.app.Activity;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -15,15 +14,11 @@ import com.wiseasy.communication.listener.CommunicationListener;
 import com.wiseasy.communication.listener.ReciverMessageListener;
 import com.wiseasy.communication.usb.UsbCommunication;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-
+public class MainActivity extends Activity implements View.OnClickListener{
     private TextView error, log;
     private EditText message;
     private Button open, sendMessage, receivemessage;
-    private RadioButton host, accessory;
-    private boolean isReceiverMessage = true;
     private UsbCommunication usbCommunication;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,28 +26,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         initView();
         initUsb();
     }
-
-    private void getUsbMessage() {
-        //接收数据
-        usbCommunication.receiveMessage(new ReciverMessageListener() {
-//            @Override
-//            public void onSuccess(byte[] bytes) {
-//                usbMessage = new String(bytes);
-//                log.setText(usbMessage);
-//            }
-
-            @Override
-            public void onSuccess(String bytes) {
-                log.setText(bytes);
-            }
-
-            @Override
-            public void onFaild(String msg) {
-                Toast.makeText(MainActivity.this, msg, Toast.LENGTH_LONG).show();
-            }
-        });
-    }
-
     /**
      * 初始化控件
      */
@@ -70,12 +43,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         receivemessage.setOnClickListener(this);
     }
 
-
     private void initUsb() {
         //初始化usbCommunication对象
         usbCommunication = UsbCommunication.getInstance(this);
     }
-
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -124,6 +95,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 getUsbMessage();
                 break;
         }
+    }
+    private void getUsbMessage() {
+        //接收数据
+        usbCommunication.receiveMessage(new ReciverMessageListener() {
+//            @Override
+//            public void onSuccess(byte[] bytes) {
+//                usbMessage = new String(bytes);
+//                log.setText(usbMessage);
+//            }
+
+            @Override
+            public void onSuccess(String bytes) {
+                log.setText(bytes);
+            }
+
+            @Override
+            public void onFaild(String msg) {
+                Toast.makeText(MainActivity.this, msg, Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     @Override

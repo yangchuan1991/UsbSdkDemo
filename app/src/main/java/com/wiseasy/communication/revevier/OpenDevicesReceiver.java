@@ -40,7 +40,7 @@ public class OpenDevicesReceiver extends BroadcastReceiver {
         if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {//判断设备是都有usb
             if (usbDevice != null) {
                 mOpenDevicesListener.openAccessoryModel(usbDevice);
-                listener.onSuccess();
+//                listener.onSuccess();
             } else {
                 mOpenDevicesListener.openDevicesError();
                 listener.onFaild("USB设备连接异常");
